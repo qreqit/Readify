@@ -3,6 +3,7 @@ package mate.academy.springbootwebgreqit.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import mate.academy.springbootwebgreqit.dto.cartitem.CartItemRequestDto;
 import mate.academy.springbootwebgreqit.dto.shoppingcart.UpdateCartItemDto;
+import mate.academy.springbootwebgreqit.ratelimit.BookRateLimiterService;
 import mate.academy.springbootwebgreqit.security.CustomUserDetailService;
 import mate.academy.springbootwebgreqit.service.ShoppingCartService;
 import org.junit.jupiter.api.BeforeAll;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
@@ -24,6 +26,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ShoppingCartControllerTest {
     protected static MockMvc mockMvc;
+
+    @MockBean
+    private BookRateLimiterService bookRateLimiterService;
 
     @Autowired
     private ObjectMapper objectMapper;

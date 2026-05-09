@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import mate.academy.springbootwebgreqit.dto.user.RefreshTokenRequestDto;
 import mate.academy.springbootwebgreqit.dto.user.UserLoginRequestDto;
 import mate.academy.springbootwebgreqit.dto.user.UserLoginResponseDto;
 import mate.academy.springbootwebgreqit.dto.user.UserRegistrationRequestDto;
@@ -43,5 +44,15 @@ public class AuthenticationController {
     @PostMapping("/login")
     public UserLoginResponseDto login(@RequestBody @Valid UserLoginRequestDto response) {
         return authenticationService.authenticate(response);
+    }
+
+    @Operation(summary = "Refresh access token using refresh token")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Tokens issued successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid refresh token")
+    })
+    @PostMapping("/refresh")
+    public UserLoginResponseDto refresh(@RequestBody @Valid RefreshTokenRequestDto request) {
+        return authenticationService.refreshAccessToken(request);
     }
 }

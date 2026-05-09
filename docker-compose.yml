@@ -1,5 +1,11 @@
 version: "3.8"
 services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
   mysqldb:
     platform: linux/amd64
     image: mysql
@@ -18,6 +24,8 @@ services:
     depends_on:
       mysqldb:
         condition: service_healthy
+      redis:
+        condition: service_started
     restart: on-failure
     image: book-store
     build: .
@@ -33,7 +41,10 @@ services:
       "spring.jpa.properties.hibernate.dialect" : "$SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT",
       "spring.datasource.driver-class-name" : "$SPRING_DATASOURSE_DRIVER_CLASS_NAME",
       "spring.jpa.hibernate.ddl-auto" : "$SPRING_JPA_HIBERNATE_DDL_AUTO",
-      "jwt.expiration": "$JWT_EXPIRATION_MS",
-      "jwt.secret": "$JWT_SECRET"
+      "jwt.access.expiration": "$JWT_ACCESS_EXPIRATION_MS",
+      "jwt.refresh.expiration": "$JWT_REFRESH_EXPIRATION_MS",
+      "jwt.secret": "$JWT_SECRET",
+      "spring.data.redis.host": "redis",
+      "spring.data.redis.port": 6379
       }'
       JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"

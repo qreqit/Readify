@@ -1,69 +1,93 @@
 package mate.academy.springbootwebgreqit.security;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.function.Function;
 import java.util.logging.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 @Component
 public class JwtUtil {
     private static final Logger logger = Logger.getLogger(JwtUtil.class.getName());
+    private static final String TOKEN_TYPE_CLAIM = "typ";
+    private static final String ACCESS = "access";
+    private static final String REFRESH = "refresh";
+
     private final Key secret;
-    @Value("${jwt.expiration}")
-    private long expiration;
+
+    @Value("${jwt.access.expiration}")
+    private long accessExpirationMs;
+
+    @Value("${jwt.refresh.expiration}")
+    private long refreshExpirationMs;
 
     public JwtUtil(@Value("${jwt.secret}") String secretString) {
         this.secret = Keys.hmacShaKeyFor(secretString.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(String username) {
+    public String generateAccessToken(String username) {
+        return buildToken(username, ACCESS, accessExpirationMs);
+    }
+
+    public String generateRefreshToken(String username) {
+        return buildToken(username, REFRESH, refreshExpirationMs);
+    }
+
+    private String buildToken(String username, String type, long ttlMs) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim(TOKEN_TYPE_CLAIM, type)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .setExpiration(new Date(System.currentTimeMillis() + ttlMs))
                 .signWith(secret)
                 .compact();
     }
 
-    public boolean isValidToken(String token) {
+    public boolean isAccessTokenValid(String token) {
+        return validateTokenOfType(token, ACCESS);
+    }
+
+    public boolean isRefreshTokenValid(String token) {
+        return validateTokenOfType(token, REFRESH);
+    }
+
+    private boolean validateTokenOfType(String token, String expectedType) {
         try {
-            Jws<Claims> claimsJwts = Jwts.parserBuilder()
-                    .setSigningKey(secret)
-                    .build()
-                    .parseClaimsJws(token);
-            boolean isExpired = claimsJwts.getBody().getExpiration().before(new Date());
-            if (isExpired) {
+            Claims claims = parseClaimsJws(token);
+            if (!expectedType.equals(claims.get(TOKEN_TYPE_CLAIM, String.class))) {
+                return false;
+            }
+            boolean expired = claims.getExpiration().before(new Date());
+            if (expired) {
                 logger.warning("Token is expired");
             }
-            return !isExpired;
-        } catch (JwtException e) {
+            return !expired;
+        } catch (JwtException | IllegalArgumentException e) {
             logger.severe("Invalid JWT token: " + e.getMessage());
-            return false;
-        } catch (IllegalArgumentException e) {
-            logger.severe("Token is null or empty: " + e.getMessage());
             return false;
         }
     }
 
     public String getUsername(String token) {
-        return getClaimsFromToken(token, Claims::getSubject);
+        return getClaim(token, Claims::getSubject);
     }
 
-    private <T> T getClaimsFromToken(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = Jwts.parserBuilder()
+    private <T> T getClaim(String token, Function<Claims, T> resolver) {
+        Claims claims = parseClaimsJws(token);
+        return resolver.apply(claims);
+    }
+
+    private Claims parseClaimsJws(String token) {
+        return Jwts.parserBuilder()
                 .setSigningKey(secret)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        return claimsResolver.apply(claims);
     }
 }

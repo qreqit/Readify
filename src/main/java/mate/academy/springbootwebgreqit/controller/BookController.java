@@ -39,6 +39,7 @@ public class BookController {
         return bookService.findAll(pageable);
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @Operation(summary = "Get book by id")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Book retrieved successfully"),
@@ -83,6 +84,7 @@ public class BookController {
         bookService.deleteById(id);
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @Operation(summary = "Search a book")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Books retrieved successfully"),
