@@ -5,6 +5,7 @@ import mate.academy.springbootwebgreqit.exception.EntityNotFoundException;
 import mate.academy.springbootwebgreqit.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,6 +16,6 @@ public class CustomUserDetailService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws EntityNotFoundException {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("Can't find user by email"));
+                .orElseThrow(() -> new UsernameNotFoundException("Can't find user by email"));
     }
 }

@@ -41,9 +41,6 @@ databaseChangeLog:
                   name: is_deleted
                   type: boolean
                   defaultValue: false
-              - column:
-                  name: shopping_card_id
-                  type: bigint
 
         - createTable:
             tableName: roles

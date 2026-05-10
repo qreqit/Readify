@@ -8,12 +8,14 @@ import mate.academy.springbootwebgreqit.dto.category.CreateCategoryRequestDto;
 import mate.academy.springbootwebgreqit.dto.category.UpdateCategoryRequestDto;
 import mate.academy.springbootwebgreqit.model.Book;
 import mate.academy.springbootwebgreqit.model.Category;
+import mate.academy.springbootwebgreqit.ratelimit.BookRateLimiterService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
@@ -32,6 +34,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CategoryControllerTest {
     protected static MockMvc mockMvc;
+
+    @MockBean
+    private BookRateLimiterService bookRateLimiterService;
 
     @Autowired
     private ObjectMapper objectMapper;

@@ -1,6 +1,8 @@
 package mate.academy.springbootwebgreqit.controller;
 
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mate.academy.springbootwebgreqit.dto.BookDto;
@@ -27,40 +29,68 @@ public class BookController {
     private final BookService bookService;
 
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get all books with pagination")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Books retrieved successfully"),
+        @ApiResponse(responseCode = "403", description = "Access denied")
+    })
     @GetMapping
-    @ApiOperation(value = "get all books with pagination")
     public Page<BookDto> getAll(Pageable pageable) {
         return bookService.findAll(pageable);
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @Operation(summary = "Get book by id")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Book retrieved successfully"),
+        @ApiResponse(responseCode = "404", description = "Book not found")
+    })
     @GetMapping("/{id}")
-    @ApiOperation(value = "Get book by id")
     public BookDto getBookById(@Valid @PathVariable Long id) {
         return bookService.findById(id);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Create a book")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Book created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid input data")
+    })
     @PostMapping
-    @ApiOperation(value = "create a book")
     public BookDto createBook(@Valid @RequestBody CreateBookRequestDto requestDto) {
         return bookService.save(requestDto);
     }
 
-    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public BookDto updateBook(@PathVariable Long id, @RequestBody @Valid UpdateBookRequestDto updateBookRequestDto) {
+    @Operation(summary = "Update a book")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Book updated successfully"),
+        @ApiResponse(responseCode = "404", description = "Book not found")
+    })
+    @PutMapping("/{id}")
+    public BookDto updateBook(@PathVariable Long id,
+                              @RequestBody @Valid UpdateBookRequestDto updateBookRequestDto) {
         return bookService.update(updateBookRequestDto);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Delete a book")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Book deleted successfully"),
+        @ApiResponse(responseCode = "404", description = "Book not found")
+    })
     @DeleteMapping("/{id}")
-    @ApiOperation(value = "delete a book")
     public void deleteBook(@PathVariable Long id) {
         bookService.deleteById(id);
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @Operation(summary = "Search a book")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Books retrieved successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid search parameters")
+    })
     @GetMapping("/search")
-    @ApiOperation(value = "search a book")
     public Page<BookDto> searchBooks(BookSearchParameters searchParameters, Pageable pageable) {
         return bookService.search(searchParameters, pageable);
     }

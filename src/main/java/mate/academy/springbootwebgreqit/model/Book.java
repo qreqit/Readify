@@ -63,6 +63,7 @@ public class Book {
     )
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
+    @JsonIgnore
     private Set<Category> categories = new HashSet<>();
 
     private boolean isDeleted = false;

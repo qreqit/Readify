@@ -1,6 +1,8 @@
 package mate.academy.springbootwebgreqit.controller;
 
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mate.academy.springbootwebgreqit.dto.order.CreateOrderRequestDto;
@@ -28,14 +30,22 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    @ApiOperation("Make order")
+    @Operation(summary = "Make order")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Order created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid input data")
+    })
     @PreAuthorize("hasRole('USER')")
     public OrderResponseDto addOrder(@RequestParam Long userId,
                                      @RequestBody CreateOrderRequestDto createOrderRequestDto) {
         return orderService.addOrder(userId, createOrderRequestDto);
     }
 
-    @ApiOperation("Get all orders")
+    @Operation(summary = "Get all orders")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Orders retrieved successfully"),
+        @ApiResponse(responseCode = "403", description = "Access denied")
+    })
     @GetMapping
     @PreAuthorize("hasRole('USER')")
     public List<OrderResponseDto> getAllOrders(@RequestParam Long userId) {
@@ -44,26 +54,37 @@ public class OrderController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}")
-    @ApiOperation("Update order status by id")
+    @Operation(summary = "Update order status by id")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Order status updated successfully"),
+        @ApiResponse(responseCode = "404", description = "Order not found")
+    })
     public OrderResponseDto updateOrderStatus(@PathVariable Long id,
                                               @RequestBody @Valid OrderRequestDto requestDto) {
         return orderService.updateOrderStatus(id, requestDto);
     }
 
+    @Operation(summary = "Get all items from order by order id")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Order items retrieved successfully"),
+        @ApiResponse(responseCode = "404", description = "Order not found")
+    })
     @GetMapping("/{orderId}/items")
-    @ApiOperation("Get all items from order by order id")
     @PreAuthorize("hasRole('USER')")
     public List<OrderItemResponseDto> getAllItemsFromOrder(@PathVariable Long orderId,
                                                            Authentication authentication) {
         return orderService.getAllItemsFromOrder(orderId);
     }
 
+    @Operation(summary = "Get item from order by order id and item id")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Order item retrieved successfully"),
+        @ApiResponse(responseCode = "404", description = "Order or item not found")
+    })
     @GetMapping("{orderId}/items/{itemId}")
-    @ApiOperation("Get item from order by order id and item id")
     @PreAuthorize("hasRole('USER')")
     public OrderItemResponseDto getItemFromOrderById(@PathVariable Long orderId,
-                                                     @PathVariable Long itemId,
-                                                     Authentication authentication) {
+                                                     @PathVariable Long itemId) {
         return orderService.getItemFromOrderById(orderId, itemId);
     }
 }

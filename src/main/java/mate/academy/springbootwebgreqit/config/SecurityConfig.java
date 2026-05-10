@@ -1,6 +1,7 @@
 package mate.academy.springbootwebgreqit.config;
 
 import lombok.RequiredArgsConstructor;
+import mate.academy.springbootwebgreqit.security.BookRateLimitFilter;
 import mate.academy.springbootwebgreqit.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final BookRateLimitFilter bookRateLimitFilter;
 
     @Bean
     public PasswordEncoder getPasswordEncoder() {
@@ -46,6 +48,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(bookRateLimitFilter, JwtAuthenticationFilter.class)
                 .userDetailsService(userDetailsService)
                 .build();
     }
